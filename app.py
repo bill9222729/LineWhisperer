@@ -23,7 +23,7 @@ openai.api_key = openai_api_key
 # 初始化 OpenAI 客戶端
 client = OpenAI(api_key=openai_api_key)
 
-@app.route("/callback", methods=['POST'])
+@app.route("/line-whisperer/callback", methods=['POST'])
 def callback():
     signature = request.headers['X-Line-Signature']
     body = request.get_data(as_text=True)

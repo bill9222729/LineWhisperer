@@ -15,8 +15,5 @@ COPY . .
 ENV FLASK_APP=app.py
 ENV FLASK_RUN_HOST=0.0.0.0
 
-# 開放端口
-EXPOSE 5000
-
 # 啟動伺服器
 CMD ["flask", "run"]
