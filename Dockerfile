@@ -11,9 +11,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 # 複製所有應用程式碼到容器中
 COPY . .
 
-# 設定 Flask 應用的環境變量
-ENV FLASK_APP=app.py
-ENV FLASK_RUN_HOST=0.0.0.0
-
 # 啟動伺服器
-CMD ["flask", "run"]
+CMD ["gunicorn", "-b", "0.0.0.0:5000", "app:app"]

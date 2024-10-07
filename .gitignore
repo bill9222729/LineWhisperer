@@ -1,3 +1,6 @@
 .env
 *.pyc
 __pycache__/
+certbot/conf/live/
+certbot/conf/archive/
+certbot/conf/renewal/

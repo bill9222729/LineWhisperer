@@ -1,0 +1,6 @@
+# .dockerignore 文件示例
+*.log
+*.ini
+*.DS_Store
+*.swp
+certbot
