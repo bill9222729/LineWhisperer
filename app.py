@@ -1,7 +1,11 @@
 from flask import Flask, request, abort
-from linebot import LineBotApi, WebhookHandler
-from linebot.exceptions import InvalidSignatureError
-from linebot.models import MessageEvent, AudioMessage, TextSendMessage
+from linebot.v3.messaging import Configuration, ApiClient, MessagingApi
+from linebot.v3.webhook import WebhookHandler
+from linebot.v3.webhooks import MessageEvent
+from linebot.v3.exceptions import InvalidSignatureError
+from linebot.v3.messaging.models import (
+    ReplyMessageRequest, TextMessage, AudioMessage as LineAudioMessage
+)
 import openai
 import os
 from openai import OpenAI
@@ -14,7 +18,9 @@ channel_secret = os.getenv('YOUR_CHANNEL_SECRET')
 openai_api_key = os.getenv('YOUR_OPENAI_API_KEY')
 
 # Line Bot 的 Channel Access Token 和 Channel Secret
-line_bot_api = LineBotApi(channel_access_token)
+configuration = Configuration(access_token=channel_access_token)
+api_client = ApiClient(configuration)
+messaging_api = MessagingApi(api_client)
 handler = WebhookHandler(channel_secret)
 
 # OpenAI API 金鑰
@@ -41,13 +47,13 @@ def callback():
         abort(500)
     return 'OK', 200
 
-@handler.add(MessageEvent, message=AudioMessage)
+@handler.add(MessageEvent, message=LineAudioMessage)
 def handle_audio_message(event):
-    # 下載語音訊息
-    message_content = line_bot_api.get_message_content(event.message.id)
+    # 取得語音內容
+    content = messaging_api.get_message_content(message_id=event.message.id)
     audio_path = f"{event.message.id}.m4a"
     with open(audio_path, 'wb') as fd:
-        for chunk in message_content.iter_content():
+        for chunk in content.iter_content():
             fd.write(chunk)
 
     # 使用 OpenAI 進行語音轉文字
@@ -61,9 +67,11 @@ def handle_audio_message(event):
     os.remove(audio_path)
 
     # 回傳轉換後的文字
-    line_bot_api.reply_message(
-        event.reply_token,
-        TextSendMessage(text=transcript.text)
+    messaging_api.reply_message(
+        ReplyMessageRequest(
+            reply_token=event.reply_token,
+            messages=[TextMessage(text=transcript.text)]
+        )
     )
 
 if __name__ == "__main__":
